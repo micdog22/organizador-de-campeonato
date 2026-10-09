@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Organizador de Campeonato: tabela, rodadas e classificação para o seu torneio</title>
+  <meta name="description" content="Monte campeonatos de pontos corridos, mata-mata ou grupos com mata-mata: tabela de jogos, folgas, chaveamento com cabeças de chave, classificação com critérios de desempate, CSV, backup e impressão.">
+  <meta name="theme-color" content="#15803d">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Organizador de Campeonato</h1>
+    <p class="lead">Tabela, rodadas, chaveamento e classificação para o seu torneio de futebol, futsal, vôlei ou videogame, com os critérios de desempate do seu jeito.</p>
+  </header>
+
+  <main>
+    <p id="message" class="message" role="status" aria-live="polite" hidden></p>
+
+    <section id="setup" class="card" aria-labelledby="setup-title" hidden>
+      <h2 id="setup-title">Novo campeonato</h2>
+      <form id="setup-form" novalidate>
+        <div class="field">
+          <label for="name">Nome do campeonato</label>
+          <input id="name" type="text" maxlength="80" placeholder="Ex.: Copa do Bairro 2026" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="teams">Times, um por linha</label>
+            <span id="team-count" class="muted" aria-live="polite">0 times</span>
+          </div>
+          <textarea id="teams" rows="9" spellcheck="false" placeholder="Unidos da Vila&#10;Estrela do Norte&#10;Atlético Ipê&#10;..."></textarea>
+          <div class="actions">
+            <button type="button" class="btn secondary small" id="sample">Usar times de exemplo</button>
+            <span class="hint">No mata-mata e nos grupos, a ordem da lista vale como ranking de cabeças de chave.</span>
+          </div>
+        </div>
+
+        <fieldset class="field">
+          <legend>Formato</legend>
+          <div class="formats">
+            <label class="format-option"><input type="radio" name="format" value="league" checked>
+              <span><strong>Pontos corridos</strong><small>Todos contra todos, com folga quando o número de times é ímpar.</small></span></label>
+            <label class="format-option"><input type="radio" name="format" value="knockout">
+              <span><strong>Mata-mata</strong><small>Eliminatória simples, com folgas até completar a chave.</small></span></label>
+            <label class="format-option"><input type="radio" name="format" value="groups">
+              <span><strong>Grupos + mata-mata</strong><small>Fase de grupos e os melhores de cada grupo seguem para a chave.</small></span></label>
+          </div>
+        </fieldset>
+
+        <div class="option-grid">
+          <div class="field" data-for="league groups">
+            <label for="double">Turnos</label>
+            <select id="double">
+              <option value="no">Turno único</option>
+              <option value="yes">Turno e returno</option>
+            </select>
+          </div>
+          <div class="field" data-for="groups">
+            <label for="group-count">Número de grupos</label>
+            <select id="group-count"></select>
+          </div>
+          <div class="field" data-for="groups">
+            <label for="advance">Classificados por grupo</label>
+            <select id="advance"></select>
+          </div>
+          <div class="field">
+            <label for="seeding">Ordem</label>
+            <select id="seeding">
+              <option value="order">Pela ordem da lista</option>
+              <option value="random">Sorteio</option>
+            </select>
+          </div>
+          <label class="check" data-for="knockout groups"><input type="checkbox" id="third-place"> Disputa de 3º lugar</label>
+        </div>
+
+        <fieldset class="field">
+          <legend>Pontuação</legend>
+          <div class="points">
+            <label>Vitória <input type="number" id="pts-win" min="0" max="10" step="1" value="3" inputmode="numeric"></label>
+            <label>Empate <input type="number" id="pts-draw" min="0" max="10" step="1" value="1" inputmode="numeric"></label>
+            <label>Derrota <input type="number" id="pts-loss" min="0" max="10" step="1" value="0" inputmode="numeric"></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend>Critérios de desempate</legend>
+          <p class="hint">Pontos vêm sempre primeiro e o sorteio sempre por último. Ligue, desligue e reordene os outros.</p>
+          <ol id="criteria" class="criteria"></ol>
+        </fieldset>
+
+        <p id="setup-error" class="error" role="alert"></p>
+        <div class="actions">
+          <button type="submit" class="btn">Criar campeonato</button>
+          <button type="button" class="btn secondary" id="setup-cancel" hidden>Voltar ao campeonato atual</button>
+          <button type="button" class="btn secondary" id="setup-import">Importar backup (JSON)</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="tournament" class="card" aria-labelledby="t-name" hidden>
+      <div class="t-head">
+        <div>
+          <h2 id="t-name"></h2>
+          <p id="t-summary" class="muted"></p>
+        </div>
+        <div class="toolbar actions">
+          <button type="button" class="btn secondary small" id="export-json">Exportar backup</button>
+          <button type="button" class="btn secondary small" id="import-json">Importar backup</button>
+          <button type="button" class="btn secondary small" id="export-csv">Baixar CSV</button>
+          <button type="button" class="btn secondary small" id="print">Imprimir</button>
+          <button type="button" class="btn small" id="new">Novo campeonato</button>
+        </div>
+      </div>
+      <div id="tabs" class="tabs" role="tablist" aria-label="Partes do campeonato"></div>
+      <div id="panels"></div>
+    </section>
+
+    <input type="file" id="file" accept="application/json,.json" hidden>
+
+    <dialog id="confirm" aria-labelledby="confirm-text">
+      <p id="confirm-text"></p>
+      <div class="actions">
+        <button type="button" class="btn" id="confirm-yes">Confirmar</button>
+        <button type="button" class="btn secondary" id="confirm-no">Cancelar</button>
+      </div>
+    </dialog>
+  </main>
+
+  <footer class="site-footer">
+    <p>Tudo roda no seu navegador. Código aberto no <a href="https://github.com/micdog22/organizador-de-campeonato">GitHub</a> · Licença MIT</p>
+  </footer>
+</body>
+</html>

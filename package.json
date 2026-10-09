@@ -1,0 +1,11 @@
+{
+  "name": "organizador-de-campeonato",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Organize campeonatos de pontos corridos, mata-mata ou grupos com tabela, rodadas, chaveamento e classificação com critérios de desempate",
+  "type": "module",
+  "scripts": { "test": "node --test" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/micdog22/organizador-de-campeonato.git" },
+  "homepage": "https://micdog22.github.io/organizador-de-campeonato/"
+}
